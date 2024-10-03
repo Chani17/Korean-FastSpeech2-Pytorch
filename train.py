@@ -23,7 +23,7 @@ def main(args):
     torch.manual_seed(0)
 
     # Get device
-    device = torch.device('cuda'if torch.cuda.is_available()else 'cpu')
+    device = torch.device('mps'if torch.backends.mps.is_available() else 'cpu')
     
     # Get dataset
     dataset = Dataset("train.txt") 
@@ -84,7 +84,7 @@ def main(args):
     # Define Some Information
     Time = np.array([])
     Start = time.perf_counter()
-    
+
     # Training
     model = model.train()
     for epoch in range(hp.epochs):

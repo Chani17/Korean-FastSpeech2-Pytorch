@@ -11,6 +11,7 @@ from audio.audio_processing import dynamic_range_compression
 from audio.audio_processing import dynamic_range_decompression
 from audio.audio_processing import window_sumsquare
 
+device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
 class STFT(torch.nn.Module):
     """adapted from Prem Seetharaman's https://github.com/pseeth/pytorch-stft"""
@@ -38,7 +39,6 @@ class STFT(torch.nn.Module):
             assert(filter_length >= win_length)
             # get window and zero center pad it to filter_length
             fft_window = get_window(window, win_length, fftbins=True)
-            fft_window = pad_center(fft_window, filter_length)
             fft_window = torch.from_numpy(fft_window).float()
 
             # window the bases
@@ -63,10 +63,11 @@ class STFT(torch.nn.Module):
         input_data = input_data.squeeze(1)
 
         forward_transform = F.conv1d(
-            input_data.cuda(),
-            Variable(self.forward_basis, requires_grad=False).cuda(),
+            input_data.to(device),
+            Variable(self.forward_basis, requires_grad=False).to(device),
             stride=self.hop_length,
-            padding=0).cpu()
+            padding=0
+        ).cpu()
 
         cutoff = int((self.filter_length / 2) + 1)
         real_part = forward_transform[:, :cutoff, :]
@@ -126,7 +127,6 @@ class TacotronSTFT(torch.nn.Module):
         self.sampling_rate = sampling_rate
         self.stft_fn = STFT(filter_length, hop_length, win_length)
         mel_basis = librosa_mel_fn(
-            sampling_rate, filter_length, n_mel_channels, mel_fmin, mel_fmax)
         mel_basis = torch.from_numpy(mel_basis).float()
         self.register_buffer('mel_basis', mel_basis)
 
