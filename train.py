@@ -24,6 +24,7 @@ def main(args):
 
     # Get device
     device = torch.device('mps'if torch.backends.mps.is_available() else 'cpu')
+    device = torch.device('mps')
     
     # Get dataset
     dataset = Dataset("train.txt") 

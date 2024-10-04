@@ -99,18 +99,25 @@ def plot_data(data, titles=None, filename=None):
     plt.close()
 
 def get_mask_from_lengths(lengths, max_len=None):
+    device = lengths.device
     batch_size = lengths.shape[0]
     if max_len is None:
         max_len = torch.max(lengths).item()
 
-    ids = torch.arange(0, max_len).unsqueeze(0).expand(batch_size, -1).to(device)
+    ids = torch.arange(0, max_len, device=device).unsqueeze(0).expand(batch_size, -1).to(device)
     mask = (ids >= lengths.unsqueeze(1).expand(-1, max_len))
 
     return mask
 
 def get_vocgan(ckpt_path, n_mel_channels=hp.n_mel_channels, generator_ratio = [4, 4, 2, 2, 2, 2], n_residual_layers=4, mult=256, out_channels=1):
 
-    checkpoint = torch.load(ckpt_path)
+    if torch.backends.mps.is_available():
+        map_location = torch.device('mps')
+    else:
+        map_location = torch.device('cpu')
+
+    checkpoint = torch.load(ckpt_path, map_location=map_location)
+    # checkpoint = torch.load(ckpt_path)
     model = Generator(n_mel_channels, n_residual_layers,
                         ratios=generator_ratio, mult=mult,
                         out_band=out_channels)

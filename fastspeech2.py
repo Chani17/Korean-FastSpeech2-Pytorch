@@ -8,7 +8,7 @@ from modules import VarianceAdaptor
 from utils import get_mask_from_lengths
 import hparams as hp
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('mps')
 
 class FastSpeech2(nn.Module):
     """ FastSpeech2 """
