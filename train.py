@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 import hparams as hp
 import os
+import wandb
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"]=hp.train_visible_devices
@@ -23,8 +24,15 @@ def main(args):
     torch.manual_seed(0)
 
     # Get device
-    device = torch.device('mps'if torch.backends.mps.is_available() else 'cpu')
     device = torch.device('mps')
+
+    wandb.init(project="FastSpeech2", name="EX_DATA", config={
+        "batch_size": hp.batch_size,
+        "grad_accum_steps": hp.acc_steps,
+        "learning_rate": 0.001,
+        "epochs": hp.epochs,
+        "model": "FastSpeech2"
+    })
     
     # Get dataset
     dataset = Dataset("train.txt") 
